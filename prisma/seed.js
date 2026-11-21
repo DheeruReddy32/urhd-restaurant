@@ -33,7 +33,7 @@ async function main() {
     data: {
       name: 'Chef Vikramaditya Rao (Owner)',
       email: 'owner@urhd.com',
-      phone: '+91 98765 43210',
+      phone: '+91 9876543210',
       password: passwordAdmin,
       role: 'ADMIN',
       loyaltyPoints: 1000,
@@ -1064,7 +1064,7 @@ async function main() {
     {
       code: 'WELCOME50',
       discountType: 'PERCENTAGE',
-      discountValue: 20,
+      discountValue: 50,
       minOrderAmount: 399,
       maxDiscount: 150,
       validUntil: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
