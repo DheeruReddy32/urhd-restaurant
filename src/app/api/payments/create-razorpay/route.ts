@@ -1,7 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import crypto from 'crypto';
 
 export async function POST(req: Request) {
   try {
@@ -20,22 +19,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET!;
     const amountInPaise = Math.round(order.totalAmount * 100);
-    const receipt = `rcpt_${order.orderNumber}`;
 
-    // Generate razorpay order ID (or test mode order ID)
-    let razorpayOrderId = `order_${crypto.randomBytes(8).toString('hex')}`;
+    // Call Razorpay Orders API directly — no SDK needed
+    const credentials = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+    const rzpResponse = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Basic ${credentials}`,
+      },
+      body: JSON.stringify({
+        amount: amountInPaise,
+        currency: 'INR',
+        receipt: `rcpt_${order.orderNumber}`,
+        notes: {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+        },
+      }),
+    });
 
-    // If real credentials exist, could invoke Razorpay API:
-    // const instance = new Razorpay({ key_id: ..., key_secret: ... });
-    // const rzpOrder = await instance.orders.create({...})
+    if (!rzpResponse.ok) {
+      const errData = await rzpResponse.json();
+      console.error('Razorpay order creation failed:', errData);
+      return NextResponse.json(
+        { error: errData?.error?.description || 'Failed to create Razorpay order' },
+        { status: 502 }
+      );
+    }
 
-    // Store razorpayOrderId in payment table
+    const rzpOrder = await rzpResponse.json();
+
+    // Save the Razorpay order ID to the payment record
     if (order.payment) {
       await prisma.payment.update({
         where: { id: order.payment.id },
         data: {
-          razorpayOrderId,
+          razorpayOrderId: rzpOrder.id,
           paymentMethod: 'RAZORPAY',
         },
       });
@@ -48,8 +71,8 @@ export async function POST(req: Request) {
       amount: order.totalAmount,
       amountInPaise,
       currency: 'INR',
-      razorpayOrderId,
-      keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_urhd88192mock',
+      razorpayOrderId: rzpOrder.id,
+      keyId,
     });
   } catch (err: any) {
     console.error('Payment order creation error:', err);
