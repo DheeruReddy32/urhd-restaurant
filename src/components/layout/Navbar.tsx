@@ -16,16 +16,13 @@ import {
   QrCode,
   ShieldAlert,
   ChefHat,
-  ChevronDown,
-  Sparkles,
 } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
   const { itemCount, totalAmount, orderType, tableNumber, setTable, setOrderType } = useCart();
-  const { user, logout, quickLoginAs } = useAuth();
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [tableModalOpen, setTableModalOpen] = useState(false);
   const [selectedTableInput, setSelectedTableInput] = useState(tableNumber ? String(tableNumber) : '4');
 
@@ -61,59 +58,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-4 text-xs">
-            {/* Quick Role Tester Switcher */}
-            <div className="relative">
-              <button
-                onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-                className="flex items-center gap-1.5 bg-brand-charcoal-light hover:bg-neutral-800 text-brand-orange px-2.5 py-1 rounded-md text-xs font-semibold border border-brand-orange/30 transition-all"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>
-                  Mode: {user ? (user.role === 'ADMIN' ? '👑 Owner' : user.role === 'KITCHEN' ? '👨‍🍳 Kitchen' : '👤 Customer') : '👤 Guest'}
-                </span>
-                <ChevronDown className="w-3 h-3" />
-              </button>
-
-              {roleDropdownOpen && (
-                <div className="absolute right-0 mt-1 w-52 bg-white text-brand-charcoal rounded-lg shadow-rustic-lg border border-neutral-200 py-1.5 z-50 text-xs font-sans">
-                  <div className="px-3 py-1 font-bold text-neutral-400 uppercase tracking-wider text-[10px]">
-                    Quick Switch Role
-                  </div>
-                  <button
-                    onClick={() => {
-                      quickLoginAs('CUSTOMER');
-                      setRoleDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-1.5 hover:bg-brand-beige/50 flex items-center justify-between"
-                  >
-                    <span>👤 Customer (Luffy)</span>
-                    <span className="text-[10px] text-brand-orange font-mono">340 Pts</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      quickLoginAs('ADMIN');
-                      setRoleDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-1.5 hover:bg-brand-beige/50 flex items-center justify-between"
-                  >
-                    <span>👑 Owner / Admin</span>
-                    <span className="text-[10px] bg-amber-100 text-amber-800 px-1 rounded">Full</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      quickLoginAs('KITCHEN');
-                      setRoleDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-1.5 hover:bg-brand-beige/50 flex items-center justify-between"
-                  >
-                    <span>👨‍🍳 Kitchen Head</span>
-                    <span className="text-[10px] bg-red-100 text-red-800 px-1 rounded">KDS</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Quick Links for Dashboards if logged in */}
+            {/* Dashboard links for logged-in roles */}
             {user?.role === 'ADMIN' && (
               <Link href="/admin" className="text-amber-400 hover:underline flex items-center gap-1 font-semibold">
                 <ShieldAlert className="w-3.5 h-3.5" />

@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Lock, Mail, ArrowRight, AlertCircle, Sparkles, User, ShieldAlert, ChefHat } from 'lucide-react';
+import { Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, quickLoginAs } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,8 +20,14 @@ export default function LoginPage() {
     setLoading(true);
 
     const res = await login(email, password);
-    if (res.success) {
-      router.push('/profile');
+    if (res.success && res.user) {
+      if (res.user.role === 'ADMIN') {
+        router.push('/admin');
+      } else if (res.user.role === 'KITCHEN') {
+        router.push('/kitchen');
+      } else {
+        router.push('/profile');
+      }
     } else {
       setErrorMsg(res.error || 'Login failed');
     }
@@ -39,50 +45,6 @@ export default function LoginPage() {
         <p className="text-xs text-neutral-500">
           Access your saved addresses, track live orders, and check Pirate Berries.
         </p>
-      </div>
-
-      {/* Quick Demo Switcher Tabs */}
-      <div className="p-4 bg-brand-beige/60 rounded-3xl border border-brand-beige-dark space-y-2.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 block text-center">
-          ⚡ One-Click Instant Demo Login:
-        </span>
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={async () => {
-              await quickLoginAs('CUSTOMER');
-              router.push('/profile');
-            }}
-            className="p-2.5 rounded-xl bg-white hover:bg-neutral-50 border border-neutral-200 text-center text-xs font-bold text-brand-charcoal transition-all shadow-xs flex flex-col items-center gap-1"
-          >
-            <User className="w-4 h-4 text-brand-orange" />
-            <span>Customer</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={async () => {
-              await quickLoginAs('ADMIN');
-              router.push('/admin');
-            }}
-            className="p-2.5 rounded-xl bg-white hover:bg-neutral-50 border border-neutral-200 text-center text-xs font-bold text-brand-charcoal transition-all shadow-xs flex flex-col items-center gap-1"
-          >
-            <ShieldAlert className="w-4 h-4 text-amber-600" />
-            <span>Owner</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={async () => {
-              await quickLoginAs('KITCHEN');
-              router.push('/kitchen');
-            }}
-            className="p-2.5 rounded-xl bg-white hover:bg-neutral-50 border border-neutral-200 text-center text-xs font-bold text-brand-charcoal transition-all shadow-xs flex flex-col items-center gap-1"
-          >
-            <ChefHat className="w-4 h-4 text-red-600" />
-            <span>Kitchen</span>
-          </button>
-        </div>
       </div>
 
       {/* Standard Email / Password Form */}
