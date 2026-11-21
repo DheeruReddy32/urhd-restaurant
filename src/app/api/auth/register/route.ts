@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { hashPassword, createSessionToken, AUTH_COOKIE_NAME } from '@/lib/auth';
